@@ -1,7 +1,8 @@
 # Makefile for Nexus CLI
 .ONESHELL:
-SHELL := /usr/bin/env bash
-.PHONY: help venv setup run bot watch lint test clean install dev demo status envcheck fix-env
+SHELL := /bin/bash
+.SHELLFLAGS := -eu -o pipefail -c
+.PHONY: help venv setup run bot watch lint test clean install dev demo status envcheck fix-env which-bash
 
 # Default target
 help:
@@ -68,14 +69,16 @@ install: setup
 # Start the main orchestrator
 run:
 	@echo "Starting Nexus CLI Orchestrator..."
+	. .venv/bin/activate && \
 	set -a; [ -f .env ] && source .env || true; set +a; \
-	./.venv/bin/python -m core.orchestrator
+	python -m core.orchestrator
 
 # Start the Discord bot
 bot:
 	@echo "Starting Discord bot..."
+	. .venv/bin/activate && \
 	set -a; [ -f .env ] && source .env || true; set +a; \
-	./.venv/bin/python -m connectors.discord.bot
+	python -m connectors.discord.bot
 
 # Start file watching mode (same as run, but with explicit messaging)
 watch:
@@ -183,6 +186,11 @@ fix-env:
 	@mkdir -p scripts
 	@chmod +x scripts/fix-env.sh 2>/dev/null || true
 	@./scripts/fix-env.sh 2>/dev/null || true
+
+# Sanity: show shell being used
+which-bash:
+	@echo "SHELL=$(SHELL)"
+	@$(SHELL) -lc 'command -v bash && bash --version | head -1'
 
 check-vault:
 	@echo "Checking Obsidian vault integration..."
