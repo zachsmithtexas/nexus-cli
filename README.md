@@ -2,6 +2,8 @@
 
 A powerful AI model routing and management CLI with support for multiple providers, intelligent fallbacks, and advanced features like key rotation and rate limiting.
 
+> **New in this release:** Added Groq, Together, and Google AI Studio providers with multi-key rotation, plus comprehensive rate limiting system.
+
 ## Features
 
 - **Multi-Provider Support**: Groq, Together, OpenRouter, Google AI Studio, Claude Code, Codex CLI, DeepSeek, and Qwen
