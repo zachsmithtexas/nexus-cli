@@ -41,7 +41,24 @@ class OpenrouterProvider(BaseProvider):
                 response.raise_for_status()
 
                 data = response.json()
-                return data["choices"][0]["message"]["content"].strip()
+                # Robust handling: some errors return 200 with an error payload
+                if not isinstance(data, dict) or "choices" not in data:
+                    err = None
+                    if isinstance(data, dict):
+                        err = data.get("error") or data.get("message")
+                    raise RuntimeError(
+                        f"Unexpected response from OpenRouter: {err or str(data)[:200]}"
+                    )
+
+                choices = data.get("choices") or []
+                if not choices:
+                    raise RuntimeError("OpenRouter returned no choices")
+
+                msg = choices[0].get("message") or {}
+                content = msg.get("content")
+                if not content:
+                    raise RuntimeError("OpenRouter choice missing message content")
+                return content.strip()
 
             except httpx.HTTPStatusError as e:
                 raise RuntimeError(
