@@ -41,28 +41,56 @@ class TaskFileHandler(FileSystemEventHandler):
     def on_created(self, event):
         """Handle file creation events."""
         if not event.is_directory and event.src_path.endswith(".md"):
-            asyncio.create_task(
-                self.orchestrator.process_new_task(Path(event.src_path))
-            )
+            loop = getattr(self.orchestrator, "loop", None)
+            if loop and loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    self.orchestrator.process_new_task(Path(event.src_path)), loop
+                )
+            else:
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.call_soon_threadsafe(
+                        asyncio.create_task,
+                        self.orchestrator.process_new_task(Path(event.src_path)),
+                    )
+                except RuntimeError:
+                    # As a last resort, run synchronously in this thread
+                    asyncio.run(
+                        self.orchestrator.process_new_task(Path(event.src_path))
+                    )
 
     def on_modified(self, event):
         """Handle file modification events."""
         if not event.is_directory and event.src_path.endswith(".md"):
-            asyncio.create_task(
-                self.orchestrator.process_task_update(Path(event.src_path))
-            )
+            loop = getattr(self.orchestrator, "loop", None)
+            if loop and loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    self.orchestrator.process_task_update(Path(event.src_path)), loop
+                )
+            else:
+                try:
+                    loop = asyncio.get_running_loop()
+                    loop.call_soon_threadsafe(
+                        asyncio.create_task,
+                        self.orchestrator.process_task_update(Path(event.src_path)),
+                    )
+                except RuntimeError:
+                    asyncio.run(
+                        self.orchestrator.process_task_update(Path(event.src_path))
+                    )
 
 
 class Orchestrator:
     """Main orchestrator for the Nexus CLI system."""
 
-    def __init__(self, base_path: Path):
+    def __init__(self, base_path: Path, loop: asyncio.AbstractEventLoop | None = None):
         self.base_path = Path(base_path)
         self.config_manager = ConfigManager(self.base_path / "config")
         self.task_queue = TaskQueue(self.base_path)
         self.router = ProviderRouter(self.config_manager)
         self.observer: Observer | None = None
         self.running = False
+        self.loop: asyncio.AbstractEventLoop | None = loop
         self._log_startup_config()
 
     def _log_startup_config(self) -> None:
@@ -86,6 +114,9 @@ class Orchestrator:
     async def start(self):
         """Start the orchestrator."""
         console.log("Starting Nexus CLI Orchestrator...")
+        # Capture running loop for thread-safe scheduling from watchdog threads
+        if self.loop is None:
+            self.loop = asyncio.get_running_loop()
 
         # Set up file watching
         self.observer = Observer()

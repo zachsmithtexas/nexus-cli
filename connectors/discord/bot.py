@@ -158,8 +158,8 @@ class NexusBot(commands.Bot):
             except Exception as e:
                 console.log(f"Failed to sync global commands: {e}")
 
-        # Start the orchestrator in background
-        self.orchestrator = Orchestrator(self.base_path)
+        # Start the orchestrator in background, pass the running loop for watchdog callbacks
+        self.orchestrator = Orchestrator(self.base_path, loop=asyncio.get_running_loop())
         asyncio.create_task(self.orchestrator.start())
 
         console.log("Nexus Discord Bot ready!")
