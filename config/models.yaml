@@ -14,7 +14,7 @@ providers:
   google_ai_studio:
     kind: http
     base_url: https://generativelanguage.googleapis.com
-    api_keys: [${GOOGLE_API_KEY_1}, ${GOOGLE_API_KEY_2}, ${GOOGLE_API_KEY_3}, ${GOOGLE_API_KEY_4}, ${GOOGLE_API_KEY_5}]
+    api_keys: ["${GOOGLE_API_KEY_1}", "${GOOGLE_API_KEY_2}", "${GOOGLE_API_KEY_3}", "${GOOGLE_API_KEY_4}", "${GOOGLE_API_KEY_5}"]
     rotation: { strategy: round_robin, cooldown_seconds: 60 }
   codex_cli:
     kind: cli
