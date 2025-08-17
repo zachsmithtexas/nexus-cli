@@ -1,0 +1,30 @@
+[general]
+project_name = "Nexus CLI"
+log_level = "INFO"
+
+[discord]
+bot_token = "${DISCORD_BOT_TOKEN}"
+app_id = "${DISCORD_APP_ID}"
+guild_id = "${DISCORD_GUILD_ID}"
+commands_channel_id = "${DISCORD_COMMANDS_CHANNEL_ID}"
+updates_channel_id = "${DISCORD_UPDATES_CHANNEL_ID}"
+
+[discord.webhooks]
+communications = "${COMMUNICATIONS_WEBHOOK_URL}"
+project_manager = "${PM_WEBHOOK_URL}"
+senior_dev = "${SD_WEBHOOK_URL}"
+junior_dev = "${JD_WEBHOOK_URL}"
+release_qa = "${RQE_WEBHOOK_URL}"
+
+[vault]
+obsidian_path = "${OBSIDIAN_VAULT_PATH}"
+sync_enabled = true
+
+[orchestrator]
+watch_interval = 1.0
+max_concurrent_tasks = 5
+
+[providers]
+use_paid_models = true
+timeout = 30.0
+max_retries = 3

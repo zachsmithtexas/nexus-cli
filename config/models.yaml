@@ -1,0 +1,257 @@
+providers:
+  groq:
+    kind: http
+    base_url: https://api.groq.com/openai/v1
+    env_key: GROQ_API_KEY
+  together:
+    kind: http
+    base_url: https://api.together.ai/v1
+    env_key: TOGETHER_API_KEY
+  openrouter:
+    kind: http
+    base_url: https://openrouter.ai/api/v1
+    env_key: OPENROUTER_API_KEY
+  google_ai_studio:
+    kind: http
+    base_url: https://generativelanguage.googleapis.com
+    api_keys: [${GOOGLE_API_KEY_1}, ${GOOGLE_API_KEY_2}, ${GOOGLE_API_KEY_3}, ${GOOGLE_API_KEY_4}, ${GOOGLE_API_KEY_5}]
+    rotation: { strategy: round_robin, cooldown_seconds: 60 }
+  codex_cli:
+    kind: cli
+    cmd: ["codex", "chat", "--model", "${MODEL}", "--stdin"]
+  claude_code:
+    kind: cli
+    cmd: ["claude", "--model", "${MODEL}"]
+  deepseek:
+    kind: http
+    base_url: https://api.deepseek.com/v1
+    env_key: DEEPSEEK_API_KEY
+  qwen:
+    kind: http
+    base_url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+    env_key: QWEN_API_KEY
+
+# Legacy models section (preserved from original config)
+models:
+  claude-3.5-sonnet:
+    provider_name: "claude_code"
+    api_endpoint: null
+    cost_per_1k_tokens: 0.003
+    is_paid: true
+    
+  claude-3-haiku:
+    provider_name: "claude_code"
+    api_endpoint: null
+    cost_per_1k_tokens: 0.00025
+    is_paid: true
+    
+  codex:
+    provider_name: "codex_cli"
+    api_endpoint: null
+    cost_per_1k_tokens: 0.002
+    is_paid: true
+    
+  deepseek-coder:
+    provider_name: "deepseek"
+    api_endpoint: "https://api.deepseek.com/v1/chat/completions"
+    cost_per_1k_tokens: 0.00014
+    is_paid: true
+    
+  qwen-coder:
+    provider_name: "qwen"
+    api_endpoint: "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+    cost_per_1k_tokens: 0.0002
+    is_paid: true
+    
+  openrouter-claude:
+    provider_name: "openrouter"
+    api_endpoint: "https://openrouter.ai/api/v1/chat/completions"
+    cost_per_1k_tokens: 0.004
+    is_paid: true
+
+# New provider routes from models.yaml.new
+provider_routes:
+  # OpenRouter models (free)
+  - id: google/gemma-3n-e4b-it:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: featherless/qwerky-72b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: google/gemma-3-4b-it:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: sarvamai/sarvam-m:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: nvidia/llama-3.1-nemotron-ultra-253b-v1:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: rekaai/reka-flash-3:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: deepseek/deepseek-r1-distill-qwen-14b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: z-ai/glm-4.5-air:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: deepseek/deepseek-r1:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: tngtech/deepseek-r1t2-chimera:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: google/gemini-2.0-flash-exp:free
+    provider: openrouter
+    capabilities: {streaming: true, vision: true}
+    is_paid: false
+  - id: deepseek/deepseek-chat-v3-0324:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: deepseek/deepseek-r1-0528:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: qwen/qwen3-coder:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: openai/gpt-oss-20b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: microsoft/mai-ds-r1:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: mistralai/mistral-small-3.1-24b-instruct:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: mistralai/mistral-small-3.2-24b-instruct:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: qwen/qwen3-14b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: qwen/qwen3-30b-a3b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: arliai/qwq-32b-arliai-rpr-v1:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: tencent/hunyuan-a13b-instruct:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: moonshotai/kimi-dev-72b:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: agentica-org/deepcoder-14b-preview:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: mistralai/mistral-nemo:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: google/gemma-3-27b-it:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: google/gemma-3-12b-it:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: nousresearch/deephermes-3-llama-3-8b-preview:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: meta-llama/llama-3.3-70b-instruct:free
+    provider: openrouter
+    capabilities: {streaming: true}
+    is_paid: false
+
+  # Together models (free)
+  - id: meta-llama/Llama-3.3-70B-Instruct-Turbo-Free
+    provider: together
+    route: meta-llama/Llama-3.3-70B-Instruct-Turbo-Free
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: lgai/exaone-3.5-32b-instruct
+    provider: together
+    route: lgai/exaone-3.5-32b-instruct
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: lgai/exaone-deep-32b
+    provider: together
+    route: lgai/exaone-deep-32b
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
+    provider: together
+    route: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
+    capabilities: {streaming: true}
+    is_paid: false
+  - id: meta-llama/Llama-Vision-Free
+    provider: together
+    route: meta-llama/Llama-Vision-Free
+    capabilities: {streaming: true, vision: true}
+    is_paid: false
+
+  # Google AI Studio models (paid)
+  - id: gemini-2.0-flash-preview-image-generation
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    limits: {rpm: 30}
+    is_paid: true
+  - id: gemini-2.5-pro
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    limits: {rpm: 150}
+    is_paid: true
+  - id: gemini-2.5-flash
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    is_paid: true
+  - id: gemini-2.5-flash-lite
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    is_paid: true
+  - id: gemini-2.0-flash-lite
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    is_paid: true
+  - id: gemini-2.0-flash
+    provider: google_ai_studio
+    capabilities: {streaming: true, vision: true}
+    is_paid: true
+
+  # CLI providers
+  - id: codex_cli
+    provider: codex_cli
+    is_paid: true
+  - id: claude_code_cli
+    provider: claude_code
+    is_paid: true

@@ -1,0 +1,45 @@
+roles:
+  communications:
+    name: "Communications Agent"
+    description: "Convert ideas/feedback into task cards and update roadmap"
+    model: "claude-3.5-sonnet"
+    providers: ["claude_code", "openrouter", "deepseek"]
+    budgets:
+      monthly_limit: 50.0
+      current_usage: 0.0
+    
+  project_manager:
+    name: "Project Manager"
+    description: "Scope tasks, set acceptance criteria, move to sprint"
+    model: "claude-3.5-sonnet"
+    providers: ["claude_code", "openrouter", "deepseek"]
+    budgets:
+      monthly_limit: 100.0
+      current_usage: 0.0
+    
+  senior_dev:
+    name: "Senior Developer"
+    description: "Handle complex tasks and create subtasks for juniors"
+    model: "claude-3.5-sonnet"
+    providers: ["claude_code", "codex_cli", "openrouter"]
+    budgets:
+      monthly_limit: 200.0
+      current_usage: 0.0
+    
+  junior_dev:
+    name: "Junior Developer"
+    description: "Implement functions and unit tests"
+    model: "deepseek-coder"
+    providers: ["deepseek", "qwen", "openrouter"]
+    budgets:
+      monthly_limit: 50.0
+      current_usage: 0.0
+    
+  release_qa:
+    name: "Release QA"
+    description: "Create release tests and notes, post release summary"
+    model: "claude-3.5-sonnet"
+    providers: ["claude_code", "openrouter"]
+    budgets:
+      monthly_limit: 75.0
+      current_usage: 0.0

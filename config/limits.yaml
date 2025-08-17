@@ -1,0 +1,62 @@
+providers:
+  groq:
+    models:
+      llama-3.1-8b-instant: { rpm: 30, tpm: 7000 }
+      llama-3.1-70b-versatile: { rpm: 30, tpm: 6000 }
+      mixtral-8x7b-32768: { rpm: 30, tpm: 5000 }
+  
+  together:
+    models:
+      meta-llama/Llama-3.3-70B-Instruct-Turbo-Free: { rpm: 60, tpm: 10000 }
+      lgai/exaone-3.5-32b-instruct: { rpm: 60, tpm: 8000 }
+      lgai/exaone-deep-32b: { rpm: 60, tpm: 8000 }
+      deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free: { rpm: 60, tpm: 10000 }
+      meta-llama/Llama-Vision-Free: { rpm: 30, tpm: 5000 }
+  
+  openrouter:
+    models:
+      # Free tier models generally have lower limits
+      google/gemma-3n-e4b-it:free: { rpm: 20, tpm: 2000 }
+      featherless/qwerky-72b:free: { rpm: 20, tpm: 3000 }
+      google/gemma-3-4b-it:free: { rpm: 20, tpm: 2000 }
+      sarvamai/sarvam-m:free: { rpm: 20, tpm: 2000 }
+      nvidia/llama-3.1-nemotron-ultra-253b-v1:free: { rpm: 10, tpm: 5000 }
+      rekaai/reka-flash-3:free: { rpm: 20, tpm: 3000 }
+      deepseek/deepseek-r1-distill-qwen-14b:free: { rpm: 20, tpm: 3000 }
+      z-ai/glm-4.5-air:free: { rpm: 20, tpm: 2000 }
+      deepseek/deepseek-r1:free: { rpm: 15, tpm: 4000 }
+      tngtech/deepseek-r1t2-chimera:free: { rpm: 20, tpm: 3000 }
+      google/gemini-2.0-flash-exp:free: { rpm: 15, tpm: 4000 }
+      deepseek/deepseek-chat-v3-0324:free: { rpm: 20, tpm: 3000 }
+      deepseek/deepseek-r1-0528:free: { rpm: 15, tpm: 4000 }
+      qwen/qwen3-coder:free: { rpm: 20, tpm: 3000 }
+      openai/gpt-oss-20b:free: { rpm: 20, tpm: 3000 }
+      microsoft/mai-ds-r1:free: { rpm: 20, tpm: 3000 }
+      mistralai/mistral-small-3.1-24b-instruct:free: { rpm: 20, tpm: 3000 }
+      mistralai/mistral-small-3.2-24b-instruct:free: { rpm: 20, tpm: 3000 }
+      cognitivecomputations/dolphin-mistral-24b-venice-edition:free: { rpm: 20, tpm: 3000 }
+      qwen/qwen3-14b:free: { rpm: 20, tpm: 3000 }
+      qwen/qwen3-30b-a3b:free: { rpm: 15, tpm: 4000 }
+      arliai/qwq-32b-arliai-rpr-v1:free: { rpm: 20, tpm: 3000 }
+      tencent/hunyuan-a13b-instruct:free: { rpm: 20, tpm: 3000 }
+      moonshotai/kimi-dev-72b:free: { rpm: 10, tpm: 5000 }
+      agentica-org/deepcoder-14b-preview:free: { rpm: 20, tpm: 3000 }
+      mistralai/mistral-nemo:free: { rpm: 20, tpm: 3000 }
+      google/gemma-3-27b-it:free: { rpm: 15, tpm: 4000 }
+      google/gemma-3-12b-it:free: { rpm: 20, tpm: 3000 }
+      nousresearch/deephermes-3-llama-3-8b-preview:free: { rpm: 20, tpm: 2000 }
+      meta-llama/llama-3.3-70b-instruct:free: { rpm: 10, tpm: 5000 }
+  
+  google_ai_studio:
+    models:
+      gemini-2.0-flash-preview-image-generation: { rpm: 30, tpm: 4000 }
+      gemini-2.5-pro: { rpm: 150, tpm: 10000 }
+      gemini-2.5-flash: { rpm: 1000, tpm: 50000 }
+      gemini-2.5-flash-lite: { rpm: 1000, tpm: 50000 }
+      gemini-2.0-flash-lite: { rpm: 1000, tpm: 50000 }
+      gemini-2.0-flash: { rpm: 1000, tpm: 50000 }
+
+# Default limits for models not explicitly configured
+default_limits:
+  rpm: 60  # requests per minute
+  tpm: 10000  # tokens per minute
