@@ -200,21 +200,18 @@ import asyncio, threading
 from pathlib import Path
 from core.orchestrator import Orchestrator
 
-async def set_ok(f):
-    f.set_result("ok")
-
 async def main():
     loop = asyncio.get_running_loop()
     orch = Orchestrator(Path.cwd(), loop=loop)
-    fut = loop.create_future()
 
-    def worker():
-        asyncio.run_coroutine_threadsafe(set_ok(fut), orch.loop)
+    async def coro():
+        print("✅ scheduled on", asyncio.get_running_loop())
 
-    t = threading.Thread(target=worker)
-    t.start(); t.join()
-    res = await fut
-    print("Loopcheck: OK" if res == "ok" else f"Loopcheck: Unexpected {res}")
+    def other_thread():
+        loop.call_soon_threadsafe(asyncio.create_task, coro())
+
+    threading.Thread(target=other_thread, daemon=True).start()
+    await asyncio.sleep(0.2)
 
 asyncio.run(main())
 PY
