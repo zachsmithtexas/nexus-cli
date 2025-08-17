@@ -52,6 +52,7 @@ class ConfigManager:
         self._settings: Settings | None = None
         self._roles: dict[str, ProviderConfig] | None = None
         self._models: dict[str, dict[str, Any]] | None = None
+        self._provider_routes: list[dict[str, Any]] | None = None
 
     def _expand_env_vars(self, value: Any) -> Any:
         """Expand environment variables in configuration values."""
@@ -149,6 +150,19 @@ class ConfigManager:
                 self._models = {}
 
         return self._models
+
+    def get_provider_routes(self) -> list[dict[str, Any]]:
+        """Get provider route configurations (new routing format)."""
+        if self._provider_routes is None:
+            models_file = self.config_dir / "models.yaml"
+            if models_file.exists():
+                with open(models_file) as f:
+                    data = yaml.safe_load(f)
+                self._provider_routes = data.get("provider_routes", []) or []
+            else:
+                self._provider_routes = []
+
+        return self._provider_routes
 
     def get_role_config(self, role: str) -> ProviderConfig | None:
         """Get configuration for a specific role."""

@@ -76,8 +76,8 @@ class ProviderRouter:
             return False
 
         # Check if this is a paid model from our configuration
-        models_config = self.config_manager.config.get("models", {})
-        provider_routes = self.config_manager.config.get("provider_routes", [])
+        models_config = self.config_manager.get_models()
+        provider_routes = self.config_manager.get_provider_routes()
 
         # Check legacy models config
         if model_id in models_config:
@@ -184,7 +184,7 @@ class ProviderRouter:
 
     async def _complete_with_model(self, model_id: str, prompt: str) -> str | None:
         """Complete a prompt with a specific model ID from provider routes."""
-        provider_routes = self.config_manager.config.get("provider_routes", [])
+        provider_routes = self.config_manager.get_provider_routes()
 
         # Find the route for this model
         route = None
