@@ -1,6 +1,13 @@
 """Discord bot integration for Nexus CLI with agent personas."""
 
+from dotenv import load_dotenv, find_dotenv
+
+# Load environment variables from .env in CWD and optional .env.local overlay
+_ = load_dotenv(find_dotenv(usecwd=True), override=False)
+_ = load_dotenv(".env.local", override=False)
+
 import asyncio
+import os
 from pathlib import Path
 
 import discord
@@ -14,6 +21,16 @@ from core.orchestrator import Orchestrator
 from core.queue import TaskQueue
 
 console = Console()
+
+
+def _mask(value: object | None) -> str:
+    """Mask sensitive or identifier-like values for safer logging."""
+    if value is None:
+        return "Not configured"
+    s = str(value)
+    if not s:
+        return "Not configured"
+    return (s[:4] + "…" + s[-4:]) if len(s) > 8 else "****"
 
 
 def resolve_id_or_name(value: str) -> int | None:
@@ -70,23 +87,14 @@ class NexusBot(commands.Bot):
     def _log_startup_config(self):
         """Log configuration at startup (redacting sensitive info)."""
         console.log("🤖 Discord Bot Configuration:")
-        console.log(f"  Guild ID: {self.guild_id or 'Not configured'}")
+        console.log(f"  Guild ID: {_mask(self.guild_id)}")
+        console.log(f"  Commands Channel: {_mask(self.commands_channel_id)}")
+        console.log(f"  Updates Channel: {_mask(self.updates_channel_id)}")
         console.log(
-            f"  Commands Channel: {self.commands_channel_id or 'Not configured'}"
+            f"  Agent Webhooks: {list(self.webhooks.keys()) or 'None'}"
         )
-        console.log(f"  Updates Channel: {self.updates_channel_id or 'Not configured'}")
-        console.log(
-            f"  Agent Webhooks: {list(self.webhooks.keys()) or 'None configured'}"
-        )
-        if (
-            self.discord_config.bot_token
-            and not self.discord_config.bot_token.startswith("${")
-        ):
-            console.log(
-                f"  Bot Token: {'*' * 10}...{self.discord_config.bot_token[-4:]}"
-            )
-        else:
-            console.log("  Bot Token: Not configured")
+        token = self.discord_config.bot_token
+        console.log(f"  Bot Token: {_mask(token) if token and not token.startswith('${') else 'Not configured'}")
 
     async def setup_hook(self):
         """Set up the bot when it starts."""
@@ -425,9 +433,9 @@ async def start_bot(base_path: Path):
     token = bot_instance.discord_config.bot_token
 
     if not token or token.startswith("${"):
-        console.log("❌ Discord bot token not configured")
-        console.log("Please set DISCORD_BOT_TOKEN in your .env file")
-        return
+        raise SystemExit(
+            "❌ DISCORD_BOT_TOKEN missing. Ensure .env is present or export the variable."
+        )
 
     try:
         console.log("🤖 Starting Discord bot...")
