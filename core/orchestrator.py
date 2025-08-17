@@ -18,6 +18,7 @@ from .config import ConfigManager
 from .queue import TaskQueue
 from .router import ProviderRouter
 from .task import Task, TaskStatus
+import httpx
 
 console = Console()
 
@@ -229,6 +230,8 @@ Please process this task according to your role as {role}.
                 self.task_queue.update_task(task)
 
                 console.log(f"Task {task.id} processed by {role}")
+                # Post an update to Discord via webhook if configured
+                await self._post_discord_webhook(role, f"Task `{task.id}` processed by {role}: {task.title}")
                 return result
             else:
                 console.log(f"Failed to get response from {role} for task {task.id}")
@@ -237,6 +240,22 @@ Please process this task according to your role as {role}.
         except Exception as e:
             console.log(f"Error routing task {task.id} to {role}: {e}")
             return None
+
+    async def _post_discord_webhook(self, agent: str, content: str) -> None:
+        """Post an update to the configured Discord webhook for the agent.
+
+        This does not require the bot; it uses the webhook URLs from settings.
+        """
+        try:
+            settings = self.config_manager.get_settings()
+            webhook_url = (settings.discord.webhooks or {}).get(agent)
+            if not webhook_url or webhook_url.startswith("${"):
+                return
+            payload = {"content": content[:2000]}
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(webhook_url, json=payload)
+        except Exception as e:
+            console.log(f"Webhook post failed for {agent}: {e}")
 
     def get_status(self) -> dict:
         """Get current system status."""

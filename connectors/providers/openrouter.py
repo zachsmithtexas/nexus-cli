@@ -56,7 +56,20 @@ class OpenrouterProvider(BaseProvider):
 
                 msg = choices[0].get("message") or {}
                 content = msg.get("content")
-                if not content:
+                # Support content as either a string or a list of text parts
+                if isinstance(content, list):
+                    parts = []
+                    for part in content:
+                        # Common shapes: {"type":"text","text":"..."} or {"text":"..."}
+                        if isinstance(part, dict):
+                            txt = part.get("text") or part.get("content")
+                            if txt:
+                                parts.append(str(txt))
+                        elif isinstance(part, str):
+                            parts.append(part)
+                    content = "\n".join(parts).strip()
+
+                if not content or not isinstance(content, str):
                     raise RuntimeError("OpenRouter choice missing message content")
                 return content.strip()
 
