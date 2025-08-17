@@ -2,8 +2,9 @@ roles:
   communications:
     name: "Communications Agent"
     description: "Convert ideas/feedback into task cards and update roadmap"
-    model: "claude-3.5-sonnet"
-    providers: ["claude_code", "openrouter", "deepseek"]
+    # Use free OpenRouter model to work with USE_PAID_MODELS=false
+    model: "deepseek/deepseek-r1-0528:free"
+    providers: ["openrouter"]
     budgets:
       monthly_limit: 50.0
       current_usage: 0.0
