@@ -168,18 +168,18 @@ envcheck:
 	@echo "Environment quick check (masked)"
 	set -a; [ -f .env ] && source .env || true; set +a; \
 	./.venv/bin/python - <<'PY'
-	import os
-	def mask(s):
-	    return s if not s else (s[:4] + "…" + s[-4:] if len(s) > 8 else "****")
-	keys = [
-	    "DISCORD_BOT_TOKEN",
-	    "DISCORD_APP_ID","DISCORD_GUILD_ID",
-	    "DISCORD_COMMANDS_CHANNEL_ID","DISCORD_UPDATES_CHANNEL_ID",
-	    "COMMUNICATIONS_WEBHOOK_URL","PM_WEBHOOK_URL","SD_WEBHOOK_URL","JD_WEBHOOK_URL","RQE_WEBHOOK_URL"
-	]
-	for k in keys:
-	    print(f"{k:30} = {mask(os.getenv(k))}")
-	PY
+import os
+def mask(s):
+    return s if not s else (s[:4] + "…" + s[-4:] if len(s) > 8 else "****")
+keys = [
+    "DISCORD_BOT_TOKEN",
+    "DISCORD_APP_ID","DISCORD_GUILD_ID",
+    "DISCORD_COMMANDS_CHANNEL_ID","DISCORD_UPDATES_CHANNEL_ID",
+    "COMMUNICATIONS_WEBHOOK_URL","PM_WEBHOOK_URL","SD_WEBHOOK_URL","JD_WEBHOOK_URL","RQE_WEBHOOK_URL"
+]
+for k in keys:
+    print(f"{k:30} = {mask(os.getenv(k))}")
+PY
 
 # Normalize CRLF line endings in .env (WSL friendliness)
 fix-env:
