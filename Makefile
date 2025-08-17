@@ -1,7 +1,7 @@
 # Makefile for Nexus CLI
 .ONESHELL:
-SHELL := /bin/bash
-.PHONY: help venv setup run bot watch lint test clean install dev demo status
+SHELL := /usr/bin/env bash
+.PHONY: help venv setup run bot watch lint test clean install dev demo status envcheck fix-env
 
 # Default target
 help:
@@ -68,12 +68,13 @@ install: setup
 # Start the main orchestrator
 run:
 	@echo "Starting Nexus CLI Orchestrator..."
+	set -a; [ -f .env ] && source .env || true; set +a; \
 	./.venv/bin/python -m core.orchestrator
 
 # Start the Discord bot
 bot:
 	@echo "Starting Discord bot..."
-	@echo "Make sure DISCORD_BOT_TOKEN is configured in .env"
+	set -a; [ -f .env ] && source .env || true; set +a; \
 	./.venv/bin/python -m connectors.discord.bot
 
 # Start file watching mode (same as run, but with explicit messaging)
@@ -158,6 +159,30 @@ check-config:
 check-providers:
 	@echo "Checking provider availability..."
 	@python -c "from core.router import ProviderRouter; from core.config import ConfigManager; r = ProviderRouter(ConfigManager('config')); print('Available providers:', r.get_available_providers())"
+
+# Quick diagnostics (masked)
+envcheck:
+	@echo "Environment quick check (masked)"
+	set -a; [ -f .env ] && source .env || true; set +a; \
+	./.venv/bin/python - <<'PY'
+	import os
+	def mask(s):
+	    return s if not s else (s[:4] + "…" + s[-4:] if len(s) > 8 else "****")
+	keys = [
+	    "DISCORD_BOT_TOKEN",
+	    "DISCORD_APP_ID","DISCORD_GUILD_ID",
+	    "DISCORD_COMMANDS_CHANNEL_ID","DISCORD_UPDATES_CHANNEL_ID",
+	    "COMMUNICATIONS_WEBHOOK_URL","PM_WEBHOOK_URL","SD_WEBHOOK_URL","JD_WEBHOOK_URL","RQE_WEBHOOK_URL"
+	]
+	for k in keys:
+	    print(f"{k:30} = {mask(os.getenv(k))}")
+	PY
+
+# Normalize CRLF line endings in .env (WSL friendliness)
+fix-env:
+	@mkdir -p scripts
+	@chmod +x scripts/fix-env.sh 2>/dev/null || true
+	@./scripts/fix-env.sh 2>/dev/null || true
 
 check-vault:
 	@echo "Checking Obsidian vault integration..."
