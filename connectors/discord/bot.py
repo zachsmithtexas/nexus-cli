@@ -13,6 +13,7 @@ from pathlib import Path
 import discord
 import httpx
 from discord.ext import commands
+from discord import app_commands
 from rich.console import Console
 
 from agents.communications.main import CommunicationsAgent
@@ -126,8 +127,36 @@ class NexusBot(commands.Bot):
         console.log(f"  Bot Token: {_mask(token) if token and not token.startswith('${') else 'Not configured'}")
 
     async def setup_hook(self):
-        """Set up the bot when it starts."""
+        """Set up bot, register commands, and sync to guild if configured."""
         console.log("Setting up Nexus Discord Bot...")
+
+        # Register slash commands before syncing
+        try:
+            self.tree.add_command(idea_command)
+            self.tree.add_command(feedback_command)
+            self.tree.add_command(status_command)
+        except Exception as e:
+            console.log(f"While adding commands: {e}")
+
+        # Sync application commands
+        if self.guild_id:
+            try:
+                guild = discord.Object(id=self.guild_id)
+                try:
+                    # Ensure any global commands are copied if present
+                    self.tree.copy_global_to(guild=guild)
+                except Exception:
+                    pass
+                synced = await self.tree.sync(guild=guild)
+                console.log(f"Synced {len(synced)} commands to guild {self.guild_id}")
+            except Exception as e:
+                console.log(f"Failed to sync commands to guild: {e}")
+        else:
+            try:
+                synced = await self.tree.sync()
+                console.log(f"Synced {len(synced)} global commands")
+            except Exception as e:
+                console.log(f"Failed to sync global commands: {e}")
 
         # Start the orchestrator in background
         self.orchestrator = Orchestrator(self.base_path)
@@ -140,16 +169,9 @@ class NexusBot(commands.Bot):
         console.log(f"{self.user} has connected to Discord!")
         console.log(f"Bot is in {len(self.guilds)} guilds")
 
-        # Sync application commands to specific guild
-        if self.guild_id:
-            try:
-                guild = discord.Object(id=self.guild_id)
-                synced = await self.tree.sync(guild=guild)
-                console.log(f"Synced {len(synced)} commands to guild {self.guild_id}")
-            except Exception as e:
-                console.log(f"Failed to sync commands to guild: {e}")
-        else:
-            console.log("No guild_id configured, skipping command sync")
+        # Command sync handled in setup_hook
+        if not self.guild_id:
+            console.log("No guild_id configured; commands synced globally in setup.")
 
     def _is_valid_request(self, interaction: discord.Interaction) -> bool:
         """Check if request is from correct guild and channel."""
@@ -453,10 +475,7 @@ async def start_bot(base_path: Path):
     # Get bot instance
     bot_instance = get_bot(base_path)
 
-    # Add commands to the bot's tree
-    bot_instance.tree.add_command(idea_command)
-    bot_instance.tree.add_command(feedback_command)
-    bot_instance.tree.add_command(status_command)
+    # Commands are added in setup_hook prior to syncing
 
     # Get Discord token
     token = bot_instance.discord_config.bot_token
