@@ -1,6 +1,13 @@
 """Main orchestrator for file watching and task routing."""
 
+from dotenv import load_dotenv, find_dotenv
+
+# Load environment from .env in CWD and optional .env.local
+_ = load_dotenv(find_dotenv(usecwd=True), override=False)
+_ = load_dotenv(".env.local", override=False)
+
 import asyncio
+import os
 from pathlib import Path
 
 from rich.console import Console
@@ -13,6 +20,16 @@ from .router import ProviderRouter
 from .task import Task, TaskStatus
 
 console = Console()
+
+
+def _mask(value: object | None) -> str:
+    """Mask sensitive values for logging."""
+    if value is None:
+        return "Not configured"
+    s = str(value)
+    if not s:
+        return "Not configured"
+    return (s[:4] + "…" + s[-4:]) if len(s) > 8 else "****"
 
 
 class TaskFileHandler(FileSystemEventHandler):
@@ -46,6 +63,25 @@ class Orchestrator:
         self.router = ProviderRouter(self.config_manager)
         self.observer: Observer | None = None
         self.running = False
+        self._log_startup_config()
+
+    def _log_startup_config(self) -> None:
+        """Log masked orchestrator configuration and provider status."""
+        settings = self.config_manager.get_settings()
+        console.log("⚙️ Orchestrator Configuration:")
+        console.log(f"  Project: {settings.project_name}")
+        console.log(f"  Log Level: {settings.log_level}")
+        console.log(f"  Obsidian: {settings.obsidian_path or 'Not configured'}")
+        providers = self.router.get_available_providers()
+        console.log(f"  Providers available: {len(providers)}")
+        # Masked provider API keys presence
+        provider_keys = [
+            "DEEPSEEK_API_KEY",
+            "OPENROUTER_API_KEY",
+            "QWEN_API_KEY",
+        ]
+        masked = [f"{k}={_mask(os.getenv(k))}" for k in provider_keys if os.getenv(k)]
+        console.log(f"  Provider Keys: {', '.join(masked) or 'None'}")
 
     async def start(self):
         """Start the orchestrator."""
