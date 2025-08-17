@@ -128,7 +128,10 @@ class ConfigManager:
 
                 self._roles = {}
                 for role_name, role_data in data.get("roles", {}).items():
-                    self._roles[role_name] = ProviderConfig(name=role_name, **role_data)
+                    rd = dict(role_data or {})
+                    # Avoid passing duplicate 'name' to ProviderConfig
+                    rd.setdefault("name", role_name)
+                    self._roles[role_name] = ProviderConfig(**rd)
             else:
                 self._roles = {}
 
