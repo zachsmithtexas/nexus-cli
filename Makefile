@@ -2,7 +2,7 @@
 .ONESHELL:
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
-.PHONY: help venv setup run bot watch lint test clean install dev demo status envcheck fix-env which-bash
+.PHONY: help venv setup run bot watch lint test clean install dev demo status envcheck fix-env which-bash loopcheck
 
 # Default target
 help:
@@ -191,6 +191,33 @@ fix-env:
 which-bash:
 	@echo "SHELL=$(SHELL)"
 	@$(SHELL) -lc 'command -v bash && bash --version | head -1'
+
+# Validate orchestrator can schedule work from other threads onto the main asyncio loop
+loopcheck:
+	@echo "Checking asyncio loop scheduling..."
+	@python - <<'PY'
+import asyncio, threading
+from pathlib import Path
+from core.orchestrator import Orchestrator
+
+async def set_ok(f):
+    f.set_result("ok")
+
+async def main():
+    loop = asyncio.get_running_loop()
+    orch = Orchestrator(Path.cwd(), loop=loop)
+    fut = loop.create_future()
+
+    def worker():
+        asyncio.run_coroutine_threadsafe(set_ok(fut), orch.loop)
+
+    t = threading.Thread(target=worker)
+    t.start(); t.join()
+    res = await fut
+    print("Loopcheck: OK" if res == "ok" else f"Loopcheck: Unexpected {res}")
+
+asyncio.run(main())
+PY
 
 check-vault:
 	@echo "Checking Obsidian vault integration..."
