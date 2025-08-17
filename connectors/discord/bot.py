@@ -51,11 +51,40 @@ class NexusBot(commands.Bot):
     """Discord bot for Nexus CLI task management with agent personas."""
 
     def __init__(self, base_path: Path):
-        # Set up intents
+        # Optional privileged intents via env (default OFF)
+        use_msg_content = os.getenv("DISCORD_MESSAGE_CONTENT", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+            "y",
+        )
+        use_members = os.getenv("DISCORD_MEMBERS", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+            "y",
+        )
+        use_presence = os.getenv("DISCORD_PRESENCE", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+            "y",
+        )
+
+        # Set up minimal intents for slash commands; toggle privileged ones via env
         intents = discord.Intents.default()
-        intents.message_content = True
+        intents.guilds = True
+        intents.dm_messages = True
+        intents.message_content = use_msg_content  # privileged
+        intents.members = use_members              # privileged
+        intents.presences = use_presence           # privileged
 
         super().__init__(command_prefix="!", intents=intents)
+
+        console.log(
+            f"[Discord Intents] guilds={intents.guilds} msg_content={intents.message_content} "
+            f"members={intents.members} presences={intents.presences}"
+        )
 
         self.base_path = Path(base_path)
         self.config_manager = ConfigManager(self.base_path / "config")
@@ -443,6 +472,13 @@ async def start_bot(base_path: Path):
     except discord.LoginFailure:
         console.log("❌ Failed to login to Discord. Check your token.")
     except Exception as e:
+        msg = str(e)
+        if "privileged intents" in msg.lower():
+            console.log(
+                "⚠️ Privileged intents requested but not enabled. "
+                "Disable via DISCORD_MESSAGE_CONTENT/DISCORD_MEMBERS/DISCORD_PRESENCE=0, "
+                "or enable them in the Discord Dev Portal → Bot → Privileged Gateway Intents."
+            )
         console.log(f"❌ Bot error: {e}")
 
 

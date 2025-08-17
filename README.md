@@ -57,6 +57,17 @@ make bot
 - `DISCORD_COMMANDS_CHANNEL_ID` - Commands channel ID
 - `DISCORD_UPDATES_CHANNEL_ID` - Updates channel ID
 
+#### Privileged Intents (default OFF)
+To avoid crashes from requesting privileged intents, the bot requests them only when explicitly enabled via env.
+
+```
+# Privileged intents (enable only if allowed in Dev Portal → Bot → Privileged Gateway Intents)
+DISCORD_MESSAGE_CONTENT=0
+DISCORD_MEMBERS=0
+DISCORD_PRESENCE=0
+```
+Set any of these to `1` (or `true/yes/y`) only if you enabled them in your Discord Developer Portal.
+
 ### Optional Discord Webhooks
 - `COMMUNICATIONS_WEBHOOK_URL` - Communications team webhook
 - `PM_WEBHOOK_URL` - Product management webhook
