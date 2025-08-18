@@ -76,122 +76,152 @@ provider_routes:
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: featherless/qwerky-72b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: google/gemma-3-4b-it:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: sarvamai/sarvam-m:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: nvidia/llama-3.1-nemotron-ultra-253b-v1:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: rekaai/reka-flash-3:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: deepseek/deepseek-r1-distill-qwen-14b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: z-ai/glm-4.5-air:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: deepseek/deepseek-r1:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: tngtech/deepseek-r1t2-chimera:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: google/gemini-2.0-flash-exp:free
     provider: openrouter
     capabilities: {streaming: true, vision: true}
     is_paid: false
+    tier: free
   - id: deepseek/deepseek-chat-v3-0324:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: deepseek/deepseek-r1-0528:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: qwen/qwen3-coder:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: openai/gpt-oss-20b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: microsoft/mai-ds-r1:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: mistralai/mistral-small-3.1-24b-instruct:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: mistralai/mistral-small-3.2-24b-instruct:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: cognitivecomputations/dolphin-mistral-24b-venice-edition:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: qwen/qwen3-14b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: qwen/qwen3-30b-a3b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: arliai/qwq-32b-arliai-rpr-v1:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: tencent/hunyuan-a13b-instruct:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: moonshotai/kimi-dev-72b:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: agentica-org/deepcoder-14b-preview:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: mistralai/mistral-nemo:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: google/gemma-3-27b-it:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: google/gemma-3-12b-it:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: nousresearch/deephermes-3-llama-3-8b-preview:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: meta-llama/llama-3.3-70b-instruct:free
     provider: openrouter
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
 
   # Together models (free)
   - id: meta-llama/Llama-3.3-70B-Instruct-Turbo-Free
@@ -199,26 +229,31 @@ provider_routes:
     route: meta-llama/Llama-3.3-70B-Instruct-Turbo-Free
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: lgai/exaone-3.5-32b-instruct
     provider: together
     route: lgai/exaone-3.5-32b-instruct
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: lgai/exaone-deep-32b
     provider: together
     route: lgai/exaone-deep-32b
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
     provider: together
     route: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
     capabilities: {streaming: true}
     is_paid: false
+    tier: free
   - id: meta-llama/Llama-Vision-Free
     provider: together
     route: meta-llama/Llama-Vision-Free
     capabilities: {streaming: true, vision: true}
     is_paid: false
+    tier: free
 
   # Google AI Studio models (paid)
   - id: gemini-2.0-flash-preview-image-generation
@@ -226,32 +261,41 @@ provider_routes:
     capabilities: {streaming: true, vision: true}
     limits: {rpm: 30}
     is_paid: true
+    tier: performance
   - id: gemini-2.5-pro
     provider: google_ai_studio
     capabilities: {streaming: true, vision: true}
     limits: {rpm: 150}
     is_paid: true
+    tier: performance
   - id: gemini-2.5-flash
     provider: google_ai_studio
     capabilities: {streaming: true, vision: true}
     is_paid: true
+    tier: budget
   - id: gemini-2.5-flash-lite
     provider: google_ai_studio
     capabilities: {streaming: true, vision: true}
     is_paid: true
+    tier: cheap
   - id: gemini-2.0-flash-lite
     provider: google_ai_studio
     capabilities: {streaming: true, vision: true}
     is_paid: true
+    tier: cheap
   - id: gemini-2.0-flash
     provider: google_ai_studio
     capabilities: {streaming: true, vision: true}
     is_paid: true
+    tier: budget
 
   # CLI providers
   - id: codex_cli
     provider: codex_cli
-    is_paid: true
+    is_paid: false
+    tier: free
   - id: claude_code_cli
     provider: claude_code
+    is_paid: false
+    tier: free
     is_paid: true
