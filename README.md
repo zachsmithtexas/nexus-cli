@@ -234,3 +234,37 @@ python -m pytest tests/     # Direct pytest
 ## Contributing
 
 [Contributing guidelines here]
+## Routing and Fallbacks
+
+- Role routing supports two modes:
+  - Single model + provider fallbacks (legacy): roles.yaml `model` with `providers: [..]`.
+  - Cross‑model fallback (new): roles.yaml `model_chain` lists model IDs in priority order. Router tries each until one succeeds.
+
+- Provider resolution comes from `config/models.yaml` `provider_routes`, so each `model_chain` entry should exist there.
+
+- Paid model gating: `USE_PAID_MODELS=false` skips paid routes. Google AI Studio is treated as free (not gated), so Gemini models work on free tier.
+
+Example (roles.yaml):
+
+```
+roles:
+  project_manager:
+    model_chain:
+      - gemini-2.5-pro
+      - deepseek/deepseek-r1-0528:free
+      - z-ai/glm-4.5-air:free
+    model: deepseek/deepseek-r1-0528:free
+    providers: [openrouter]
+```
+
+## Performance Tuning
+
+- `OPENROUTER_MAX_TOKENS` (default 800): reduce to 300–500 for faster free‑model responses.
+- `ORCHESTRATOR_ROLES`: comma‑separated role list to run in sequence (e.g., `communications,senior_dev`).
+- `USE_PAID_MODELS=false`: keeps you on free routes; Google AI Studio (Gemini) still runs on free keys.
+
+## Discord Webhooks and Updates
+
+- Put webhook URLs in `.env` → resolved in `config/settings.toml` under `[discord.webhooks]`.
+- Orchestrator posts a webhook update after any role successfully processes a task.
+- Webhook name/avatar defaults come from the Discord UI; per‑message overrides are optional via env and not required.
