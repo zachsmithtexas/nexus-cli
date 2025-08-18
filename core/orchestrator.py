@@ -195,7 +195,23 @@ class Orchestrator:
                 )
 
                 # Process pipeline of roles (each runs once per task)
+                # Allow overriding pipeline via env (comma-separated roles)
+                roles_env = os.getenv(
+                    "ORCHESTRATOR_ROLES",
+                    "communications,project_manager,senior_dev,junior_dev,release_qa",
+                )
+                roles = [r.strip() for r in roles_env.split(",") if r.strip()]
+                default_instructions = {
+                    "communications": "Review the idea and create/normalize the task card, updating the roadmap if needed.",
+                    "project_manager": "Triage and scope this task. Add or refine acceptance criteria and move it through planning.",
+                    "senior_dev": "Assess complexity, outline the approach, and create any necessary subtasks.",
+                    "junior_dev": "Implement the next actionable step or utility according to the plan.",
+                    "release_qa": "Add validation steps and ensure release notes are updated if changes are user-facing.",
+                }
                 pipeline: list[tuple[str, str]] = [
+                    (role, default_instructions.get(role, "Proceed with your responsibilities for this task."))
+                    for role in roles
+                ]
                     (
                         "communications",
                         "Review the idea and create/normalize the task card, updating the roadmap if needed.",

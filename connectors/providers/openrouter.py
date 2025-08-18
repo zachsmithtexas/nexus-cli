@@ -26,59 +26,85 @@ class OpenrouterProvider(BaseProvider):
             "X-Title": "Nexus CLI",
         }
 
+        max_tokens = int(os.getenv("OPENROUTER_MAX_TOKENS", "800"))
         payload = {
             "model": self.model_name,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.1,
-            "max_tokens": 4000,
+            "max_tokens": max_tokens,
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            try:
-                response = await client.post(
-                    f"{self.base_url}/chat/completions", headers=headers, json=payload
-                )
-                response.raise_for_status()
-
-                data = response.json()
-                # Robust handling: some errors return 200 with an error payload
-                if not isinstance(data, dict) or "choices" not in data:
-                    err = None
-                    if isinstance(data, dict):
-                        err = data.get("error") or data.get("message")
-                    raise RuntimeError(
-                        f"Unexpected response from OpenRouter: {err or str(data)[:200]}"
+            last_err = None
+            for attempt in range(3):
+                try:
+                    response = await client.post(
+                        f"{self.base_url}/chat/completions", headers=headers, json=payload
                     )
+                    response.raise_for_status()
 
-                choices = data.get("choices") or []
-                if not choices:
-                    raise RuntimeError("OpenRouter returned no choices")
+                    data = response.json()
+                    # Robust handling: some errors return 2xx with an error payload
+                    if not isinstance(data, dict) or "choices" not in data:
+                        err = None
+                        if isinstance(data, dict):
+                            err = data.get("error") or data.get("message")
+                        raise RuntimeError(
+                            f"Unexpected response from OpenRouter: {err or str(data)[:200]}"
+                        )
 
-                msg = choices[0].get("message") or {}
-                content = msg.get("content")
-                # Support content as either a string or a list of text parts
-                if isinstance(content, list):
-                    parts = []
-                    for part in content:
-                        # Common shapes: {"type":"text","text":"..."} or {"text":"..."}
-                        if isinstance(part, dict):
-                            txt = part.get("text") or part.get("content")
-                            if txt:
-                                parts.append(str(txt))
-                        elif isinstance(part, str):
-                            parts.append(part)
-                    content = "\n".join(parts).strip()
+                    choices = data.get("choices") or []
+                    if not choices:
+                        raise RuntimeError("OpenRouter returned no choices")
 
-                if not content or not isinstance(content, str):
-                    raise RuntimeError("OpenRouter choice missing message content")
-                return content.strip()
+                    msg = choices[0].get("message") or {}
 
-            except httpx.HTTPStatusError as e:
-                raise RuntimeError(
-                    f"OpenRouter API error: {e.response.status_code} - {e.response.text}"
-                )
-            except Exception as e:
-                raise RuntimeError(f"OpenRouter API error: {e!s}")
+                    # Extract text robustly from nested structures
+                    def collect_text(node):
+                        texts = []
+                        if isinstance(node, str):
+                            texts.append(node)
+                        elif isinstance(node, dict):
+                            # Prefer common fields first
+                            for key in ("content", "text", "reasoning", "output_text"):
+                                v = node.get(key)
+                                if isinstance(v, str):
+                                    texts.append(v)
+                            # Recurse other values
+                            for v in node.values():
+                                texts.extend(collect_text(v))
+                        elif isinstance(node, list):
+                            for item in node:
+                                texts.extend(collect_text(item))
+                        return texts
+
+                    texts = collect_text(msg)
+                    content = "\n".join([t for t in texts if isinstance(t, str) and t.strip()])
+                    content = content.strip()
+
+                    if not content:
+                        raise RuntimeError("OpenRouter choice missing message content")
+                    return content
+
+                except httpx.HTTPStatusError as e:
+                    # Retry on transient 5xx
+                    if 500 <= e.response.status_code < 600 and attempt < 2:
+                        last_err = e
+                        continue
+                    raise RuntimeError(
+                        f"OpenRouter API error: {e.response.status_code} - {e.response.text}"
+                    )
+                except (httpx.ConnectError, httpx.ReadTimeout) as e:
+                    # Retry network hiccups
+                    last_err = e
+                    if attempt < 2:
+                        continue
+                    raise RuntimeError(f"OpenRouter API error: {e!s}")
+                except Exception as e:
+                    raise RuntimeError(f"OpenRouter API error: {e!s}")
+            # If we exhausted retries
+            if last_err:
+                raise RuntimeError(f"OpenRouter API error after retries: {last_err!s}")
 
     def is_available(self) -> bool:
         """Check if OpenRouter API is available."""
