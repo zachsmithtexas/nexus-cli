@@ -70,28 +70,47 @@ class ProviderRouter:
         return self._provider_cache[cache_key]
 
     def _should_skip_paid_provider(self, provider_name: str, model_id: str) -> bool:
-        """Check if paid providers should be skipped."""
-        use_paid_models = os.getenv("USE_PAID_MODELS", "true").lower() == "true"
-        if use_paid_models:
-            return False
+        """Tier-based gating for models/providers with backward compatibility.
 
-        # Check if this is a paid model from our configuration
-        models_config = self.config_manager.get_models()
+        Tiers: free, cheap, budget, performance, ultra.
+        If ALLOWED_MODEL_TIERS is set, it controls gating. Otherwise we fall back to
+        USE_PAID_MODELS (false => only 'free').
+        Special-case providers considered free: claude_code, codex_cli, google_ai_studio.
+        """
+        allowed_env = os.getenv("ALLOWED_MODEL_TIERS")
+        if allowed_env:
+            allowed_tiers = [t.strip().lower() for t in allowed_env.split(",") if t.strip()]
+        else:
+            use_paid_models = os.getenv("USE_PAID_MODELS", "true").lower() == "true"
+            allowed_tiers = (
+                ["free", "cheap", "budget", "performance", "ultra"]
+                if use_paid_models
+                else ["free"]
+            )
+
+        # Provider-level free classification
+        if provider_name in {"claude_code", "codex_cli", "google_ai_studio"}:
+            return "free" not in allowed_tiers
+
+        # Resolve tier from provider_routes or legacy models
+        tier = None
         provider_routes = self.config_manager.get_provider_routes()
-
-        # Check legacy models config
-        if model_id in models_config:
-            model_config = models_config[model_id]
-            if model_config.get("is_paid", False):
-                return True
-
-        # Check provider routes config
         for route in provider_routes:
             if route.get("id") == model_id and route.get("provider") == provider_name:
-                if route.get("is_paid", False):
-                    return True
+                tier = (route.get("tier") or ("free" if not route.get("is_paid") else "performance")).lower()
+                break
 
-        return False
+        if tier is None:
+            models_config = self.config_manager.get_models()
+            if model_id in models_config:
+                cfg = models_config[model_id]
+                tier = (cfg.get("tier") or ("free" if not cfg.get("is_paid") else "performance")).lower()
+
+        if tier is None:
+            # Be permissive if we can't resolve tier
+            return False
+
+        return tier not in allowed_tiers
 
     async def complete(
         self, role: str, prompt: str, model_id: str = None
@@ -107,15 +126,29 @@ class ProviderRouter:
             console.log(f"No configuration found for role: {role}")
             return None
 
+        # Cross-model fallback: try an ordered list of model IDs if provided
+        model_chain = getattr(role_config, "model_chain", None)
+        if model_chain:
+            for mid in model_chain:
+                try:
+                    res = await self._complete_with_model(mid, prompt)
+                    if res:
+                        return res
+                except Exception as e:
+                    console.log(f"Model {mid} failed: {e}, trying next in chain...")
+                    continue
+            console.log(f"All models in chain failed for role {role}")
+            return None
+
         model_name = role_config.model
 
         # Try each provider in order
         for provider_name in role_config.providers:
             try:
-                # Skip if paid models are disabled and this is a paid model
+                # Skip if model tier not allowed
                 if self._should_skip_paid_provider(provider_name, model_name):
                     console.log(
-                        f"Skipping paid model {model_name} on {provider_name} (USE_PAID_MODELS=false)"
+                        f"Skipping {model_name} on {provider_name} (tier gated)"
                     )
                     continue
 

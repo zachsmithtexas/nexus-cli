@@ -104,11 +104,7 @@ class GoogleAiStudioProvider(BaseProvider):
         if not self.api_keys:
             raise RuntimeError("No Google API keys configured")
 
-        # Check if paid models are disabled
-        use_paid_models = os.getenv("USE_PAID_MODELS", "true").lower() == "true"
-        if not use_paid_models:
-            logger.info("Paid models disabled, skipping Google AI Studio request")
-            raise RuntimeError("Paid models disabled")
+        # Google AI Studio often has a free tier; do not gate on USE_PAID_MODELS
 
         max_retries = len(self.api_keys)
 

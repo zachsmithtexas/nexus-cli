@@ -243,6 +243,10 @@ python -m pytest tests/     # Direct pytest
 - Provider resolution comes from `config/models.yaml` `provider_routes`, so each `model_chain` entry should exist there.
 
 - Paid model gating: `USE_PAID_MODELS=false` skips paid routes. Google AI Studio is treated as free (not gated), so Gemini models work on free tier.
+ - Tier-based gating: set `ALLOWED_MODEL_TIERS` to control which tiers can run.
+   - Tiers: `free`, `cheap`, `budget`, `performance`, `ultra`.
+   - If unset, falls back to `USE_PAID_MODELS` (`false` => only `free`; `true` => all tiers).
+   - Providers treated as free for gating: `claude_code` (Claude CLI), `codex_cli` (Codex CLI), `google_ai_studio`.
 
 Example (roles.yaml):
 
@@ -262,6 +266,18 @@ roles:
 - `OPENROUTER_MAX_TOKENS` (default 800): reduce to 300–500 for faster free‑model responses.
 - `ORCHESTRATOR_ROLES`: comma‑separated role list to run in sequence (e.g., `communications,senior_dev`).
 - `USE_PAID_MODELS=false`: keeps you on free routes; Google AI Studio (Gemini) still runs on free keys.
+
+### Quick command: fast-bot
+
+For quick demos and snappier loops:
+
+```
+make fast-bot                    # defaults: 400 tokens, roles: communications,senior_dev
+OPENROUTER_MAX_TOKENS=500 \
+ORCHESTRATOR_ROLES=communications,project_manager \
+make fast-bot
+```
+
 
 ## Discord Webhooks and Updates
 
