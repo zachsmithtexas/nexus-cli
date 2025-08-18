@@ -18,6 +18,7 @@ from .config import ConfigManager
 from .queue import TaskQueue
 from .router import ProviderRouter
 from .task import Task, TaskStatus
+import os
 import httpx
 
 console = Console()
@@ -193,12 +194,38 @@ class Orchestrator:
                     "Auto-promoted from inbox with normalized front matter",
                 )
 
-                # Route to communications agent for initial processing
-                await self.route_to_agent(
-                    "communications",
-                    task,
-                    "Please review this task and update the roadmap if needed.",
-                )
+                # Process pipeline of roles (each runs once per task)
+                pipeline: list[tuple[str, str]] = [
+                    (
+                        "communications",
+                        "Review the idea and create/normalize the task card, updating the roadmap if needed.",
+                    ),
+                    (
+                        "project_manager",
+                        "Triage and scope this task. Add or refine acceptance criteria and move it through planning.",
+                    ),
+                    (
+                        "senior_dev",
+                        "Assess complexity, outline the approach, and create any necessary subtasks.",
+                    ),
+                    (
+                        "junior_dev",
+                        "Implement the next actionable step or utility according to the plan.",
+                    ),
+                    (
+                        "release_qa",
+                        "Add validation steps and ensure release notes are updated if changes are user-facing.",
+                    ),
+                ]
+
+                for role, instruction in pipeline:
+                    # Skip roles already processed for this task
+                    if any(
+                        a.agent == role and a.action.startswith("processed by")
+                        for a in task.activity
+                    ):
+                        continue
+                    await self.route_to_agent(role, task, instruction)
 
         except Exception as e:
             console.log(f"Error promoting task {task.id}: {e}")
@@ -227,6 +254,9 @@ Please process this task according to your role as {role}.
                     role,
                     result[:100] + "..." if len(result) > 100 else result,
                 )
+                # Ensure tasks remain in backlog after processing
+                if task.status == TaskStatus.INBOX:
+                    task.status = TaskStatus.BACKLOG
                 self.task_queue.update_task(task)
 
                 console.log(f"Task {task.id} processed by {role}")
@@ -251,7 +281,27 @@ Please process this task according to your role as {role}.
             webhook_url = (settings.discord.webhooks or {}).get(agent)
             if not webhook_url or webhook_url.startswith("${"):
                 return
-            payload = {"content": content[:2000]}
+            # Display names and avatar URLs can be overridden per message
+            agent_names = {
+                "communications": "Communications Agent",
+                "project_manager": "Project Manager",
+                "senior_dev": "Senior Developer",
+                "junior_dev": "Junior Developer",
+                "release_qa": "Release QA",
+            }
+            avatar_env = {
+                "communications": os.getenv("COMMUNICATIONS_WEBHOOK_AVATAR"),
+                "project_manager": os.getenv("PM_WEBHOOK_AVATAR"),
+                "senior_dev": os.getenv("SD_WEBHOOK_AVATAR"),
+                "junior_dev": os.getenv("JD_WEBHOOK_AVATAR"),
+                "release_qa": os.getenv("RQE_WEBHOOK_AVATAR"),
+            }
+            payload = {
+                "content": content[:2000],
+                "username": agent_names.get(agent, agent.replace("_", " ").title()),
+            }
+            if avatar_env.get(agent):
+                payload["avatar_url"] = avatar_env[agent]
             async with httpx.AsyncClient(timeout=10.0) as client:
                 await client.post(webhook_url, json=payload)
         except Exception as e:
