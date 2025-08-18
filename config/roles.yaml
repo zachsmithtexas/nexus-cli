@@ -2,6 +2,12 @@ roles:
   communications:
     name: "Communications Agent"
     description: "Convert ideas/feedback into task cards and update roadmap"
+    # Cross-model fallback chain: try in order until one succeeds
+    model_chain:
+      - gemini-2.5-pro                  # Google AI Studio (free-tier keys)
+      - deepseek/deepseek-r1-0528:free  # OpenRouter free
+      - z-ai/glm-4.5-air:free           # OpenRouter free
+    # Legacy fields remain for compatibility when model_chain is absent
     model: "deepseek/deepseek-r1-0528:free"
     providers: ["openrouter"]
     budgets:
@@ -26,6 +32,10 @@ roles:
   senior_dev:
     name: "Senior Developer"
     description: "Handle complex tasks and create subtasks for juniors"
+    model_chain:
+      - gemini-2.5-pro                  # Google AI Studio (free-tier keys)
+      - deepseek/deepseek-r1-0528:free  # OpenRouter free
+      - z-ai/glm-4.5-air:free           # OpenRouter free
     model: "deepseek/deepseek-r1-0528:free" 
     providers: ["openrouter"]
     budgets:
@@ -48,6 +58,10 @@ roles:
   release_qa:
     name: "Release QA"
     description: "Create release tests and notes, post release summary"
+    model_chain:
+      - gemini-2.5-pro                  # Google AI Studio (free-tier keys)
+      - deepseek/deepseek-r1-0528:free  # OpenRouter free
+      - z-ai/glm-4.5-air:free           # OpenRouter free
     model: "deepseek/deepseek-r1-0528:free"
     providers: ["openrouter"]
     budgets:
